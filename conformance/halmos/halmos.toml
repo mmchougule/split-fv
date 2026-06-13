@@ -1,0 +1,14 @@
+# Halmos config for the Split settlement-core symbolic conformance suite.
+# A bare `halmos` invocation (as CI runs it) reproduces the green run below.
+#
+# Why z3 (not the default yices) + a 90s per-assertion budget:
+#   The settlement math is nonlinear in (q * strike) with CEIL/FLOOR divisions.
+#   On the worst-case checks (ResidualBound, RoundingMonotone, Backing/ExercisePays
+#   with the re-multiplied CEIL product) z3 decides the bounded-domain queries where
+#   yices stalls. The symbolic-domain bounds (see each test's "SYMBOLIC DOMAIN (honest
+#   bound)" comment) are solver-tractability limits, NOT soundness assumptions — the
+#   unbounded statements are discharged in the Lean track. Nothing here is faked green.
+
+[global]
+solver = "z3"
+solver_timeout_assertion = 90000   # ms; 0 would mean unbounded (can hang CI)

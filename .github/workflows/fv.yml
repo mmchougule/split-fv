@@ -1,0 +1,58 @@
+name: fv
+on:
+  push:
+  pull_request:
+
+jobs:
+  lean:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install elan (Lean toolchain manager)
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o elan-init.sh
+          sh elan-init.sh -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> $GITHUB_PATH
+      - name: lake build (zero sorry enforced)
+        working-directory: lean
+        run: |
+          lake build
+          # DoD gate: fail only if a `sorry`/`admit` appears in PROOF POSITION
+          # (term `:= sorry`, tactic `by sorry`, or a line that is just `sorry`).
+          # The word also legitimately appears in prose/docstrings, so we do NOT
+          # match bare occurrences — only the syntactic proof-hole forms.
+          ! grep -rnE ':=[[:space:]]*sorry\b|\bby[[:space:]]+sorry\b|^[[:space:]]*sorry[[:space:]]*$|\badmit\b' Split Split.lean
+
+  vyper:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: compile + property tests
+        working-directory: vyper
+        run: |
+          pip install vyper pytest eth-tester web3
+          vyper SplitVaultReference.vy
+          vyper PutVaultReference.vy
+          python -m pytest tests -q
+
+  foundry:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: foundry-rs/foundry-toolchain@v1
+      - name: stateful invariants + fuzz
+        working-directory: conformance/foundry
+        run: forge test -vvv
+
+  halmos:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: foundry-rs/foundry-toolchain@v1
+      - name: symbolic checks
+        working-directory: conformance/halmos
+        run: |
+          pip install halmos
+          halmos

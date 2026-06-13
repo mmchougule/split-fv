@@ -1,0 +1,17 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+test = "test"
+solc = "0.8.24"
+optimizer = true
+optimizer_runs = 200
+
+# Stateful invariant config. fail_on_revert=false because the handler intentionally
+# probes out-of-phase / out-of-bounds actions to PROVE PhaseSafety reverts them; a
+# reverted handler call is a valid (no-op) step, not a property failure.
+[invariant]
+runs = 256
+depth = 64
+fail_on_revert = false
+call_override = false

@@ -1,0 +1,12 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+test = "test"
+solc = "0.8.24"
+optimizer = false
+ast = true
+extra_output = ["storageLayout"]
+
+# halmos reads the forge build artifacts in `out/` (needs AST + storageLayout).
+
