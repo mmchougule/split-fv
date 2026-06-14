@@ -46,7 +46,7 @@ is ever permanently stranded (**ResidualLiveness**).
 ## How to verify (3 commands)
 ```bash
 ( cd lean && lake build )                 # Lean proofs — must be green, zero `sorry`
-( cd vyper && pip install vyper && python -m pytest tests )   # reference impl + property tests
+( cd vyper && pip install -r requirements.txt && python -m pytest tests )  # reference impl + property tests
 ( cd conformance/foundry && forge test )  # shipped-Solidity conformance invariants
 ```
 CI runs all of this on every push: [`.github/workflows/fv.yml`](.github/workflows/fv.yml). These are the
