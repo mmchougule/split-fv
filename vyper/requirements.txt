@@ -3,4 +3,5 @@
 vyper==0.4.3
 web3==7.13.0
 eth-tester[py-evm]==0.13.0b1
+titanoboa==0.2.8
 pytest

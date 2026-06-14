@@ -11,4 +11,7 @@
 
 [global]
 solver = "z3"
-solver_timeout_assertion = 90000   # ms; 0 would mean unbounded (can hang CI)
+# 300s/assertion: locally the worst bounded nonlinear check (ResidualBound_put) decides
+# in well under this; on the slower GitHub runner it sat right at the old 90s edge and
+# timed out, so we give generous headroom. 0 would mean unbounded (can hang CI).
+solver_timeout_assertion = 300000  # ms

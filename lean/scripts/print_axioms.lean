@@ -21,5 +21,6 @@ open Split
 #print axioms T_ClaimNoDouble
 #print axioms T_ResidualLiveness
 
+#print axioms Split.Put.T_OracleIndependence
 #print axioms Split.Put.T_PutSymmetry
 #print axioms Split.Put.T_ResidualLiveness

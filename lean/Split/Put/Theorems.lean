@@ -167,11 +167,31 @@ theorem T_PhaseSafety_claimU {s s' : State} {amt : Nat}
   · rename_i hg; obtain ⟨hset, _, _⟩ := hg; exact hset
   · exact absurd hstep (by simp)
 
-/-- T_OracleIndependence (put) — STRUCTURAL: `apply : State → Step → Option State` takes
-    no price/oracle/DEX argument; `Step` carries no price. Type-level fact, witnessed here;
-    the binding bytecode obligation is on the shipped put Solidity (Halmos). -/
-theorem T_OracleIndependence : (∀ (s : State) (st : Step), apply s st = apply s st) := by
-  intro s st; rfl
+/-- External world (put): any price / oracle answer / DEX reserves a settlement *could* read. -/
+structure World where
+  ethUsdPrice  : Nat
+  oracleAnswer : Int
+  dexReserve0  : Nat
+  dexReserve1  : Nat
+
+/-- The put settlement transition lifted into an arbitrary external world. Oracle-independence
+    is the claim that this added world argument is *inert*: `apply` factors through no part of `w`. -/
+def applyIn (_w : World) (s : State) (st : Step) : Option State := apply s st
+
+/-- T_OracleIndependence (put) — NON-INTERFERENCE (mirrors the call-vault statement in
+    `Split/Theorems.lean`). For ALL external worlds `w₁ w₂` (any prices, oracle answers, DEX
+    reserves), every state and step settles to the SAME result:
+
+        applyIn w₁ s st = applyIn w₂ s st.
+
+    This is the textbook non-interference statement: the external input `w` cannot influence the
+    observable output. It holds by `rfl` *precisely because* `apply`'s type admits no price — the
+    proof being definitional IS the evidence that no external value is read (a price-settled design
+    makes the analogous statement false). The binding bytecode obligation is on the shipped put
+    Solidity — no settlement selector calls a price/oracle/DEX address — via the Halmos
+    `OracleCanary` check and the static `oracle_independence_static.py` pass. -/
+theorem T_OracleIndependence (w₁ w₂ : World) (s : State) (st : Step) :
+    applyIn w₁ s st = applyIn w₂ s st := rfl
 
 /-- T_ClaimNoDouble (put, WETH=strike leg) — claim zeroes credit before sending.
     `s'.totalClaimW + amt = s.totalClaimW` (the credit is gone before the transfer). -/

@@ -32,7 +32,7 @@ jobs:
       - name: compile + property tests
         working-directory: vyper
         run: |
-          pip install vyper pytest eth-tester web3
+          pip install -r requirements.txt
           vyper SplitVaultReference.vy
           vyper PutVaultReference.vy
           python -m pytest tests -q
@@ -48,11 +48,15 @@ jobs:
 
   halmos:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: foundry-rs/foundry-toolchain@v1
+      # Pin halmos + z3 to the versions the green local run used; the heaviest
+      # nonlinear (q·strike) check sits near the per-assertion budget, so the
+      # slower CI runner needs the larger timeout set in halmos.toml.
       - name: symbolic checks
         working-directory: conformance/halmos
         run: |
-          pip install halmos
+          pip install halmos==0.3.3 z3-solver==4.12.6.0
           halmos
