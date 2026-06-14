@@ -72,7 +72,7 @@ From Verity's own `capabilities`/`TRUST_ASSUMPTIONS` docs:
   (the Ledger contract proves real conservation sum-equations this way), so the aggregate theorems are
   *expressible*; they were just not ported within the box.
 
-## Why this matters for the EF/Vitalik review
+## Why this matters for review
 The thesis is that settlement safety is an accounting theorem with no price read.
 Verity strengthens that claim: the same machine that checks the proofs (Lean 4) also **compiles the
 contract to EVM bytecode**, so the "spec ↔ impl ↔ deployed code" gap that normally needs a separate

@@ -147,6 +147,6 @@ construction, not by assumption**: there is no price *parameter* to manipulate. 
 this **structurally** — at the type level in Lean (the transition functions have no price argument and read
 no price field) and at the bytecode level in the conformance layer (the settlement selectors make no external
 call to a price/oracle/DEX address). This is *not* the weaker "settlement happens to be time-invariant"
-argument; it is the absence of a price input from the surface itself. That is the property an EF reviewer
+argument; it is the absence of a price input from the surface itself. That is the property an external reviewer
 should check first, because everything else (backing, conservation, no-overpay) is standard accounting once
 the price-manipulation vector is gone.

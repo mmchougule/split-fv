@@ -30,7 +30,7 @@ price/oracle/DEX** (**OracleIndependence**, structural), claims can't double-spe
 put vault proves all of the above with roles swapped (**PutSymmetry**), and after settlement no vault asset
 is ever permanently stranded (**ResidualLiveness**).
 
-## How to read this repo (EF reviewer path)
+## How to read this repo (reviewer path)
 1. [`docs/SETTLEMENT_SPEC.md`](docs/SETTLEMENT_SPEC.md) — the frozen math model: state fields, the six
    transitions, the residual-liveness terminal rule. Every other layer maps to these exact names.
 2. [`docs/SAFETY_THEOREMS.md`](docs/SAFETY_THEOREMS.md) — the ten theorems in plain English, each with a
