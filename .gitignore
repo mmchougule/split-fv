@@ -15,3 +15,14 @@ __pycache__/
 # misc
 .DS_Store
 node_modules/
+# Secrets — never commit (defensive; this repo has no keys, keep it that way)
+.env
+.env.*
+*.key
+*.pem
+*.keystore
+keypair.json
+id.json
+*.secret
+secrets.json
+.secrets/
