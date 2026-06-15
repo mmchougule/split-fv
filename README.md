@@ -1,5 +1,7 @@
 # split-fv — Machine-Checked Safety for Split's Settlement Core
 
+[![fv](https://github.com/mmchougule/split-fv/actions/workflows/fv.yml/badge.svg)](https://github.com/mmchougule/split-fv/actions/workflows/fv.yml)
+
 Split is an **oracle-free, physically-settled** options primitive. It turns collateral into two tradable
 claims (P and N); traders take leverage with fixed downside; LPs take the other side. **Settlement reads
 no ETH/USD price** — so settlement safety is an *accounting theorem*, not a price theorem.
