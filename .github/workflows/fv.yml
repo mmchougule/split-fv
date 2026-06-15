@@ -22,6 +22,21 @@ jobs:
           # The word also legitimately appears in prose/docstrings, so we do NOT
           # match bare occurrences — only the syntactic proof-hole forms.
           ! grep -rnE ':=[[:space:]]*sorry\b|\bby[[:space:]]+sorry\b|^[[:space:]]*sorry[[:space:]]*$|\badmit\b' Split Split.lean
+      - name: axiom footprint (no sorryAx; oracle-independence axiom-free)
+        working-directory: lean
+        run: |
+          lake env lean scripts/print_axioms.lean | tee axioms.txt
+          # 1. No proof hole: sorryAx must never appear in any theorem's axiom set.
+          ! grep -q 'sorryAx' axioms.txt
+          # 2. Load-bearing claim: oracle independence depends on NO axioms (both vaults).
+          grep -q "'Split.T_OracleIndependence' does not depend on any axioms" axioms.txt
+          grep -q "'Split.Put.T_OracleIndependence' does not depend on any axioms" axioms.txt
+          # 3. The only axioms permitted anywhere are Lean's standard propext / Quot.sound.
+          #    Flatten every [..] axiom list to one token per line and fail on anything else.
+          UNEXPECTED=$(grep -oE '\[[^]]*\]' axioms.txt | tr ',[]' '\n\n\n' | sed 's/ //g' \
+            | grep -vE '^(propext|Quot\.sound)?$' || true)
+          if [ -n "$UNEXPECTED" ]; then echo "Unexpected axioms found:"; echo "$UNEXPECTED"; exit 1; fi
+          echo "Axiom footprint OK: only propext / Quot.sound; oracle-independence axiom-free; no sorryAx."
 
   vyper:
     runs-on: ubuntu-latest
