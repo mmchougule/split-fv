@@ -28,9 +28,10 @@ def exercise (s : State) (q : Nat) : Option State :=
     some { s with collat := s.collat - q, strikeBal := s.strikeBal + paid, nSupply := s.nSupply - q }
   else none
 
-/-- 4. settle: snapshot; apply the §6 residual terminal rule when pSupplyAt == 0. -/
+/-- 4. settle: only AFTER the exercise window closes (`exerciseEnd ≤ now`) so it can never
+    preempt an in-window exercise; snapshot; apply the §6 residual terminal rule when pSupplyAt == 0. -/
 def settle (s : State) : Option State :=
-  if ¬ s.settled ∧ s.maturity ≤ s.now then
+  if ¬ s.settled ∧ s.exerciseEnd ≤ s.now then
     let s1 := { s with settled := true, pSupplyAt := s.pSupply, collatAt := s.collat, strikeAt := s.strikeBal }
     if s.pSupply = 0 then
       -- residual routes to the immutable recipient (credited; claimable). Ghost totals capture it.

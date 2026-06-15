@@ -52,19 +52,21 @@ def test_exercise_only_in_window(make_vault, accounts, kind):
     expect_revert(env.exercise, a, 1 * one)
 
 
-def test_settle_requires_maturity_and_once(make_vault, accounts, kind):
+def test_settle_requires_exercise_end_and_once(make_vault, accounts, kind):
     env = make_vault(kind)
     a = accounts[1]
     one = U if kind == "call" else 10 ** 6
     env.fund_collat(a, 2 * one)
     env.mint(a, 2 * one)
-    # before maturity: settle reverts
-    expect_revert(env.settle)
-    # at/after maturity: ok once
+    # Call the contract DIRECTLY (env.settle() auto-advances time). settle is gated to AFTER the
+    # exercise window, so it reverts both before maturity AND during the window — it can never
+    # preempt an in-window exercise.
+    expect_revert(env.vault.settle)   # before maturity
     env.into_exercise()
-    env.settle()
-    # second settle reverts
-    expect_revert(env.settle)
+    expect_revert(env.vault.settle)   # during the exercise window — no settle-preemption
+    env.past_exercise_end()
+    env.vault.settle()                # ok once, only after exerciseEnd
+    expect_revert(env.vault.settle)   # second settle reverts ("settled")
 
 
 def test_settled_transitions_blocked_pre_settlement(make_vault, accounts, kind):

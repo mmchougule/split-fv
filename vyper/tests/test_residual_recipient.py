@@ -130,7 +130,7 @@ def test_section6_terminal_fires_and_recipient_claim_path_total(kind):
         vault.redeemPair(5 * one)  # burn ALL P + N -> pSupply == 0
     assert vault.pSupply() == 0
 
-    _warp_exact(f["maturity"])
+    _warp_exact(f["exerciseEnd"])  # settle is only valid after the exercise window closes
     # settle is permissionless: a random caller (not alice, not recipient) can run it.
     keeper = boa.env.generate_address("keeper")
     with boa.env.prank(keeper):
@@ -312,7 +312,7 @@ def test_floor_out_never_overpays_realistic(kind):
 # 3. Exercise-window PHASE BOUNDARIES — exact timestamps.
 #    Contract guards:  _inExercise:  maturity <= now < exerciseEnd
 #                      _inMintRedeem: now < maturity
-#                      settle:        now >= maturity
+#                      settle:        now >= exerciseEnd
 # ---------------------------------------------------------------------------
 @pytest.mark.parametrize("kind", ["call", "put"])
 def test_phase_boundary_exactly_at_maturity(kind):
@@ -342,9 +342,11 @@ def test_phase_boundary_exactly_at_maturity(kind):
         vault.exercise(q_ex)
     assert vault.nSupply() == 4 * one
 
-    # at exactly maturity: settle is allowed (now >= maturity)
-    vault.settle()
-    assert vault.settled()
+    # at exactly maturity: settle is NOT allowed yet — it is gated to AFTER exerciseEnd so it can
+    # never preempt an in-window exercise (this is the settle-preemption fix).
+    with boa.reverts():
+        vault.settle()
+    assert vault.settled() is False
 
 
 @pytest.mark.parametrize("kind", ["call", "put"])
@@ -419,7 +421,7 @@ def test_settle_permissionless_and_once(kind):
     with boa.env.prank(alice):
         vault.mint(2 * one)
 
-    _warp_exact(f["maturity"])
+    _warp_exact(f["exerciseEnd"])  # settle only valid after the exercise window
     # a random keeper (not the minter) settles
     keeper = boa.env.generate_address("keeper")
     with boa.env.prank(keeper):

@@ -502,8 +502,12 @@ class PutStateMachine(RuleBasedStateMachine):
     @rule()
     @precondition(lambda self: self.phase in ("mint_redeem", "exercise") and not self.vault.settled())
     def r_settle(self):
-        if boa.env.evm.patch.timestamp < self.maturity:
-            boa.env.time_travel(seconds=2 * self.window + 1)
+        # settle is only valid AFTER the exercise window closes — warp past exerciseEnd from
+        # any phase so settle can never preempt an in-window exercise.
+        ee = self.vault.exerciseEnd()
+        cur = boa.env.evm.patch.timestamp
+        if cur < ee:
+            boa.env.time_travel(seconds=ee - cur)
         self.vault.settle()
         self.phase = "settled"
 

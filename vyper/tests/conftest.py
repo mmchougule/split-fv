@@ -109,6 +109,9 @@ class VaultEnv:
             return self.vault.exercise(q)
 
     def settle(self, who=None):
+        # settle() is only valid AFTER the exercise window closes (now >= exerciseEnd) so it can
+        # never preempt an in-window exercise; advance there first.
+        self.past_exercise_end()
         if who is None:
             return self.vault.settle()
         with boa.env.prank(who):

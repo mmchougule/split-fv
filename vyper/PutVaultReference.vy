@@ -203,13 +203,14 @@ def exercise(q: uint256):
     self._locked = False
 
 # ----------------------------------------------------------------------------
-# 4. settle() [now >= maturity, !settled] — snapshot pools + §6 terminal residual rule.
-#    Anyone may call once now >= maturity (matches Lean guard `maturity <= now`).
+# 4. settle() [now >= exerciseEnd, !settled] — snapshot pools + §6 terminal residual rule.
+#    Anyone may call, but only AFTER the exercise window closes (now >= exerciseEnd) so settle
+#    can never preempt an in-window exercise (matches Lean guard `exerciseEnd <= now`).
 # ----------------------------------------------------------------------------
 @external
 def settle():
     assert not self.settled, "settled"
-    assert block.timestamp >= maturity, "early"
+    assert block.timestamp >= exerciseEnd, "early"
     self.settled = True
     self.pSupplyAt = self.pSupply
     self.collatAt = self.collat
