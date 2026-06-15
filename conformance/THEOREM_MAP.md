@@ -14,6 +14,16 @@ Definition of done: every row fully linked, every cell green. (✅ proved/green 
 > those cells remain 🟡 (typechecks only) and the Certora `no_stranded_*` rule should be re-pointed at the
 > now-fixed put once a key is available.
 
+> SCOPE OF THE NAMES (the precise content is each theorem's statement + docstring, not the short label):
+> `T_Conservation` is **claim-ledger consistency** — on a claim, the holdings drop equals the credit drop
+> to the wei and credits never rise without backing; it is not a single global conservation equation over
+> deposits/withdrawals. `T_RoundingMonotone`'s strike leg is modeled at denominator 1 (the 6dp-USDC /
+> 18dp-WETH decimal scaling is abstracted away); the substantive content is the FLOOR-out share leg.
+> `T_OracleIndependence` is a **model-level** non-interference fact (call + put: settlement factors
+> through no external world); the deployed-bytecode obligation is the separate Halmos canary + static
+> call-target pass. `T_ClaimNoDouble` is the **aggregate-ledger** form (per-address credit reuse is
+> checked against the shipped Solidity, not in the Lean model).
+
 | Theorem | Lean lemma | Vyper test | Foundry invariant | Halmos check | Certora rule |
 |---|---|---|---|---|---|
 | T_Backing | `Split.T_Backing` ✅ (call+put; axioms=propext,Quot.sound) | `test_backing` ✅ (call+put) | `invariant_T_Backing` ✅ (call+put) | `check_T_Backing_mint`/`_exercise` ✅ call · `check_T_Backing_mint_put` ✅ put (q<2³²) | `credits_le_holdings_weth`/`_usdc` 🟡 (typechecks; needs key to verify) |
