@@ -43,16 +43,15 @@ So the specs are well-formed and typecheck against the real contracts. The *veri
 (SAT/UNSAT per rule) requires `CERTORAKEY` and the cloud prover, which were not available in this
 environment — run the two commands above WITHOUT `--compilation_steps_only` once a key is present.
 
-## HONEST GAP — residual liveness (do not paper over)
+## Known gap — residual liveness
 The shipped `SplitVault.sol` / `PutVault.sol` do **NOT** implement SETTLEMENT_SPEC §6's
 `residualRecipient` terminal rule. `redeemP` divides by `pSupplyAt` with no `pSupplyAt > 0` guard, so
 when all P is redeemed before maturity (`pSupplyAt == 0` at settle) the frozen residual is unreachable
 (every `redeemP` reverts on division-by-zero).
 
-Consequences, stated plainly:
+Consequences:
 - `no_stranded_residualLiveness_SPEC_v6` is written to the **frozen spec** and is therefore EXPECTED
-  TO FAIL against the current Solidity. It is the conformance TARGET for the §6 fix — it is NOT
-  deleted/weakened to make CI look green.
+  TO FAIL against the current Solidity. It is the conformance TARGET for the §6 fix.
 - `no_stranded_currentImpl_safety` is the weaker property the current code DOES satisfy: in the
   `pSupplyAt == 0` branch `redeemP` reverts, so no credit can be mis-created — the funds are frozen
   (liveness broken) but never over-drawn or double-credited (safety preserved).

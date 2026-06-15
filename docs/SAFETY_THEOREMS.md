@@ -7,11 +7,11 @@ module `lean/Split/Put/Theorems.lean` with WETH/USDC roles swapped — first-cla
 Theorem names are **frozen**: they are referenced verbatim by `conformance/THEOREM_MAP.md`, the Foundry
 `invariant_T_*`, the Halmos `check_T_*`, and the Certora rules. Do not rename.
 
-> **Honest scope.** These cover the SETTLEMENT CORE only. Pricing uses an off-chain signed quote and is OUT
+> **Scope.** These cover the SETTLEMENT CORE only. Pricing uses an off-chain signed quote and is OUT
 > of scope (see `ASSUMPTIONS_AND_BOUNDARY.md` and `THREAT_MODEL.md`). **"Oracle-free" = settlement reads no
 > price.** It does not mean "no price exists anywhere in the product."
 >
-> **Honest status.** This file states the theorems and their formal Lean signatures. Whether each is *proved*
+> **Status.** This file states the theorems and their formal Lean signatures. Whether each is *proved*
 > (vs still a scaffold `sorry`) is tracked, per layer, in `conformance/THEOREM_MAP.md` — that table is the
 > single source of truth for what is green. A theorem is DONE only when its whole row is green.
 

@@ -16,13 +16,13 @@ not a sketch. It encodes the frozen settlement model from
 Frozen field names (SPEC §2): `collat, strikeBal, pSupply, nSupply, settled,
 pSupplyAt, collatAt, strikeAt, claimW, claimU, balP, balN, now`.
 
-Modeling notes (honest):
+Modeling notes:
 * `claimW/claimU/balP/balN` are real address→Uint256 mappings (Verity `slot n : Address → Uint256`).
 * The GLOBAL safety theorems (T_Backing post-settle, T_ResidualBound, T_ClaimNoDouble aggregate)
   are stated over ghost totals `totalClaimW/totalClaimU` exactly as the Lean source of truth does,
   because Verity's whole-mapping sum proofs go through `Verity.Specs.Common.sumBalances` /
   `Verity.Proofs.Stdlib.ListSum` (see the Ledger contract). This is the same modeling decision
-  the Lean track made — NOT a weakening.
+  the Lean track made.
 * CEIL-in / FLOOR-out use Verity's proven `mulDivUp` (= ceil(a*b/c)) and `mulDivDown` (= floor).
   Strike is quoted in USDC (6dp) per 1 collateral unit; `UNIT_W` folds into the multiply so the
   on-chain op is `mulDivUp q strike UNIT_W` (CEIL) for exercise and `mulDivDown q frozen pSupplyAt`

@@ -10,7 +10,7 @@ This module asserts the terminal rule (b) is wired and well-defined, and that th
 liveness property holds: after every P-holder redeems and claims, the vault holds only
 bounded dust — no economically meaningful funds are locked. Call AND put.
 
-Honest note on reachability of pSupplyAt == 0 *with* a nonzero residual:
+Note on reachability of pSupplyAt == 0 *with* a nonzero residual:
   A nonzero strike residual only arises from `exercise`, which BURNS N. The matching P then
   cannot be redeem-paired (redeemPair needs both P and N), so it stays outstanding and
   pSupplyAt > 0 at settle. Thus, from honest transitions, pSupplyAt == 0 coincides only with

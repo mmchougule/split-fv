@@ -29,14 +29,14 @@ def test_exercise_pays_in_before_out(make_vault, accounts, kind):
         expected = -(-(q * strike) // UNIT_U)
     assert paid == expected
 
-    weth0 = env.weth.functions.balanceOf(env.vault.address).call()
-    usdc0 = env.usdc.functions.balanceOf(env.vault.address).call()
+    weth0 = env.weth.balanceOf(env.vault.address)
+    usdc0 = env.usdc.balanceOf(env.vault.address)
 
     env.fund_strike(a, paid)
     env.exercise(a, q)
 
-    weth1 = env.weth.functions.balanceOf(env.vault.address).call()
-    usdc1 = env.usdc.functions.balanceOf(env.vault.address).call()
+    weth1 = env.weth.balanceOf(env.vault.address)
+    usdc1 = env.usdc.balanceOf(env.vault.address)
 
     if kind == "call":
         # USDC strike IN == paid, WETH collateral OUT == q

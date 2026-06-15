@@ -36,7 +36,7 @@ to prove `T_PhaseSafety` (a revert is a valid no-op step, not a property failure
 
 Each `invariant_<TheoremName>` matches the frozen names in `../THEOREM_MAP.md`.
 
-## Conformance result (honest)
+## Conformance result
 
 **Call vault: 8/8 invariants pass.** All 16,384-call runs green, including a
 NON-VACUOUS `T_ResidualLiveness` — the directed `hDrainAllThenSettle` driver
@@ -53,7 +53,7 @@ residual is credited to an immutable `residualRecipient` (constructor arg), and
 `redeemP` carries an explicit `pSupplyAt > 0` guard. `invariant_T_ResidualLiveness`
 verifies the residual is therefore always fully claimable — no value is stranded.
 
-> History (kept for honesty): an earlier revision of the shipped Solidity did **not**
+> History: an earlier revision of the shipped Solidity did **not**
 > implement §6, and this suite caught it — the put `T_ResidualLiveness` invariant
 > failed with a fuzzer-found minimal counterexample (`mint(…)` ceil-in vs
 > `redeemPair(…)` floor-out leaving `Settled(usdcPool: 1, pSupply: 0)`, 1 unit frozen

@@ -71,12 +71,12 @@ def test_conservation(make_vault, accounts, kind):
     # claimW always moves WETH; claimU always moves USDC (both vaults).
     cw = env.v("claimableW", a)  # WETH credit
     cu = env.v("claimableU", a)  # USDC credit
-    weth0 = env.weth.functions.balanceOf(env.vault.address).call()
-    usdc0 = env.usdc.functions.balanceOf(env.vault.address).call()
+    weth0 = env.weth.balanceOf(env.vault.address)
+    usdc0 = env.usdc.balanceOf(env.vault.address)
     env.claimW(a)
     env.claimU(a)
-    weth1 = env.weth.functions.balanceOf(env.vault.address).call()
-    usdc1 = env.usdc.functions.balanceOf(env.vault.address).call()
+    weth1 = env.weth.balanceOf(env.vault.address)
+    usdc1 = env.usdc.balanceOf(env.vault.address)
     assert weth0 - weth1 == cw
     assert usdc0 - usdc1 == cu
     # whatever stays in the vault is fully backed by real tokens (no overpay)

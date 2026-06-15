@@ -1,6 +1,6 @@
 # Theorem Map — one row per safety theorem, traced across every layer
 
-Definition of done: every row fully linked, every cell green. (✅ proved/green · 🟡 stub/partial · ⬜ todo · ❌ honest known-fail — see note)
+Definition of done: every row fully linked, every cell green. (✅ proved/green · 🟡 stub/partial · ⬜ todo · ❌ known-fail — see note)
 
 > UPDATE 2026-06-12 (integration pass): the shipped `src/PutVault.sol` NOW implements SETTLEMENT_SPEC §6's
 > `residualRecipient` terminal rule (constructor takes `_residualRecipient`; `settle()` credits the entire
@@ -9,7 +9,7 @@ Definition of done: every row fully linked, every cell green. (✅ proved/green 
 > verifies the residual is fully claimable by the recipient (256×64 calls, green). The CALL vault
 > (`src/SplitVault.sol`) has NO residualRecipient and still relies on its exact 1:1 WETH `redeemPair`
 > leaving empty pools — genuinely live for honest transitions, but a STRAY donation to the call vault
-> would strand (documented, non-faked, in `ResidualLivenessWitness.t.sol::test_residualLiveness_GAP_...`).
+> would strand (documented in `ResidualLivenessWitness.t.sol::test_residualLiveness_GAP_...`).
 > Certora cloud verdicts (SAT/UNSAT per rule) are STILL NOT obtained — no CERTORAKEY in this environment;
 > those cells remain 🟡 (typechecks only) and the Certora `no_stranded_*` rule should be re-pointed at the
 > now-fixed put once a key is available.
@@ -40,23 +40,23 @@ Definition of done: every row fully linked, every cell green. (✅ proved/green 
 The Lean column is the proof source of truth. Foundry/Halmos/Certora verify the SHIPPED Solidity behaves the
 same. Vyper is the readable reference. A theorem is DONE only when its whole row is green.
 
-> **Halmos note (honest, `conformance/halmos/`):** `halmos` (with the pinned `halmos.toml`: solver=z3,
+> **Halmos note (`conformance/halmos/`):** `halmos` (with the pinned `halmos.toml`: solver=z3,
 > 90s/assertion) is **GREEN — 25/25 symbolic checks pass** across `SplitVaultSymbolic.t.sol` (12),
 > `PutVaultSymbolic.t.sol` (8), `OracleIndependence.t.sol` (2 symbolic) + the static `oracle_independence_static.py`.
 > These are SYMBOLIC (not fuzz): inputs are `svm.createUint256` symbols, so a pass = property holds for EVERY
-> value in the stated bound. **Honest bound disclosure:** the nonlinear-multiplication checks (the CEIL/FLOOR
+> value in the stated bound. **Symbolic bounds:** the nonlinear-multiplication checks (the CEIL/FLOOR
 > `q*strike` facts: RoundingMonotone, ExercisePays, ResidualBound, Backing-mint) bound the symbolic amount to
 > `q < 2³²`. This is a **solver-tractability limit, not a soundness assumption** — full 256-bit nonlinear
 > bitvector reasoning is SMT-intractable (yices AND z3 both TIMEOUT at 2⁴⁸–2⁹⁶ even at 120s; verified). The
 > CEIL/FLOOR identities are scale-free, so a 2³²-wide symbolic `q` (≫ any real position) is a faithful
 > witness; the UNBOUNDED statements are discharged in the Lean track and the aggregate Σ-bounds in Certora.
-> Each bound is documented inline in its test with a "SYMBOLIC DOMAIN (honest bound)" comment. The
+> Each bound is documented inline in its test with a "SYMBOLIC DOMAIN (bound)" comment. The
 > `ResidualBound` checks assert the SAFETY form `credit <= pool` + the single-division share identity
 > (not the re-multiplied `credit*pAt <= pool*qr`, which is the SMT-intractable redundant restatement of EVM
 > FLOOR division). Each phase/claim/oracle check is FULLY unbounded (no `q<2³²`) — only the nonlinear-product
 > ones carry the bound. Reproduce: `cd conformance/halmos && forge build && halmos` (+ `python3 oracle_independence_static.py`).
 
-> **Foundry note (honest, `conformance/foundry/`):** stateful invariants run against the SHIPPED
+> **Foundry note (`conformance/foundry/`):** stateful invariants run against the SHIPPED
 > `src/SplitVault.sol` / `src/PutVault.sol` (symlinked), 256 runs × depth 64 = 16,384 calls per invariant.
 > **Call vault: 8/8 green** — incl. a NON-VACUOUS `T_ResidualLiveness`: the directed `hDrainAllThenSettle`
 > driver provably reaches the `pSupplyAt==0` settled state (verified with an expected-to-fail reachability
@@ -64,9 +64,9 @@ same. Vyper is the readable reference. A theorem is DONE only when its whole row
 > **Put vault: 8/8 green (as of 2026-06-12).** The shipped `PutVault` now implements the SETTLEMENT_SPEC §6
 > `residualRecipient` terminal rule, so the prior mint→redeemPair ceil-dust no longer strands: when
 > `settle()` runs with `pSupplyAt==0` the entire frozen residual is credited to the immutable recipient.
-> `invariant_T_ResidualLiveness` was rewritten from the old RED honest-fail to verify the TRUE §6 property
+> `invariant_T_ResidualLiveness` was rewritten from the old RED known-fail to verify the TRUE §6 property
 > (`claimableUsdc/Weth[recipient] == usdcPool/wethPool`) and is GREEN across 16,384 calls. Constructor call
 > sites in the test suite were updated to the new 6-arg signature. Witness/characterization in
 > `foundry/test/ResidualLivenessWitness.t.sol`; its GAP test still documents that a STRAY donation to the
-> CALL vault (which has no recipient) strands — that remains true and is not faked.
+> CALL vault (which has no recipient) strands — that remains true.
 > Full tally: `forge test` = 18/18 tests pass (8 call invariants + 8 put invariants + 2 witness).

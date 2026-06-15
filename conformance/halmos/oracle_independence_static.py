@@ -26,7 +26,7 @@ What this script proves on the COMPILED runtime bytecode of SplitVault & PutVaul
       cross-checked against the ABI (those are the only external contract refs).
 
 This is conservative: if ANY check fails we exit non-zero and print the offending
-opcode offset. No green-washing.
+opcode offset.
 """
 
 import json

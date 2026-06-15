@@ -1,7 +1,10 @@
 # Vyper reference + property-test deps (clone-from-scratch reproduce).
 #   pip install -r requirements.txt && python -m pytest tests
+#
+# The whole suite runs on titanoboa (`boa`) — the framework the Vyper docs
+# recommend. No web3 / eth-tester needed. `hypothesis` powers the stateful
+# property tests.
 vyper==0.4.3
-web3==7.13.0
-eth-tester[py-evm]==0.13.0b1
 titanoboa==0.2.8
 pytest
+hypothesis

@@ -28,8 +28,8 @@ def test_no_double_claim(make_vault, accounts, kind):
     cu = env.v("claimableU", a)
     assert cw > 0 and cu > 0
 
-    weth0 = env.weth.functions.balanceOf(a).call()
-    usdc0 = env.usdc.functions.balanceOf(a).call()
+    weth0 = env.weth.balanceOf(a)
+    usdc0 = env.usdc.balanceOf(a)
 
     # first claim succeeds and zeroes the credit
     env.claimW(a)
@@ -37,8 +37,8 @@ def test_no_double_claim(make_vault, accounts, kind):
     assert env.v("claimableW", a) == 0
     assert env.v("claimableU", a) == 0
 
-    weth1 = env.weth.functions.balanceOf(a).call()
-    usdc1 = env.usdc.functions.balanceOf(a).call()
+    weth1 = env.weth.balanceOf(a)
+    usdc1 = env.usdc.balanceOf(a)
     assert weth1 - weth0 == cw
     assert usdc1 - usdc0 == cu
 
@@ -47,8 +47,8 @@ def test_no_double_claim(make_vault, accounts, kind):
     expect_revert(env.claimU, a)
 
     # balances unchanged after the failed second claims
-    assert env.weth.functions.balanceOf(a).call() == weth1
-    assert env.usdc.functions.balanceOf(a).call() == usdc1
+    assert env.weth.balanceOf(a) == weth1
+    assert env.usdc.balanceOf(a) == usdc1
 
 
 def test_total_credits_decrease_exactly_once(make_vault, accounts, kind):

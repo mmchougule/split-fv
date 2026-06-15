@@ -15,7 +15,7 @@ import {MockERC20} from "../src/MockERC20.sol";
  *
  * Names map 1:1 to docs/SAFETY_THEOREMS.md (THEOREM_MAP.md "Halmos check" column).
  *
- * HONEST SCOPE / what symbolic execution can and cannot reach here:
+ * SCOPE / what symbolic execution can and cannot reach here:
  *  - Each check_* drives ONE settlement selector from a symbolic-but-well-formed
  *    pre-state and asserts the post-state invariant. This proves single-step
  *    preservation symbolically. Multi-step reachability is the Lean track's job
@@ -105,7 +105,7 @@ contract SplitVaultSymbolicTest is SymTest, Test {
     function check_T_ExercisePays(uint256 qm, uint256 qe) public {
         qm = svm.createUint256("qm");
         qe = svm.createUint256("qe");
-        // SYMBOLIC DOMAIN (honest bound): qm, qe fully symbolic over [0, 2**32). The asserted
+        // SYMBOLIC DOMAIN (bound): qm, qe fully symbolic over [0, 2**32). The asserted
         // facts (wethOut == qe exactly; usdcIn == owed; CEIL: usdcIn*1e18 >= qe*strike) are
         // structural/scale-free. 2**32 is a SOLVER-TRACTABILITY bound — the nonlinear
         // qe*STRIKE vs owed*1e18 comparison times out at 2**96 (yices/z3, >120s); the
@@ -143,7 +143,7 @@ contract SplitVaultSymbolicTest is SymTest, Test {
     // ----------------------------------------------------------------------
     function check_T_RoundingMonotone(uint256 q) public {
         q = svm.createUint256("q");
-        // SYMBOLIC DOMAIN (honest bound): q is fully symbolic over [0, 2**32).
+        // SYMBOLIC DOMAIN (bound): q is fully symbolic over [0, 2**32).
         // The CEIL identity ceil(q*S)*1e18 ∈ [q*S, q*S+1e18) is SCALE-FREE — it follows
         // from the (a+b-1)/b algebra, independent of magnitude — so a 2**32-wide symbolic
         // q is a faithful witness for ALL q. The bound is a SOLVER-TRACTABILITY limit, not
@@ -165,7 +165,7 @@ contract SplitVaultSymbolicTest is SymTest, Test {
     function check_T_ResidualBound(uint256 qm, uint256 qr) public {
         qm = svm.createUint256("qm");
         qr = svm.createUint256("qr");
-        // SYMBOLIC DOMAIN (honest bound): qm, qr fully symbolic over [0, 2**32). The asserted
+        // SYMBOLIC DOMAIN (bound): qm, qr fully symbolic over [0, 2**32). The asserted
         // FLOOR pro-rata bound (credit*pAt <= poolW*qr; credit <= poolW) involves two symbolic
         // products and a symbolic division — full 256-bit is SMT-intractable (times out at
         // 2**96). 2**32 is a solver-tractability bound; the unbounded Σ-credits ≤ pool fact is

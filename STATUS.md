@@ -1,6 +1,6 @@
 # split-fv — status
 
-Honest, one-screen snapshot of what is verified and what is not. The per-theorem matrix is
+One-screen snapshot of what is verified and what is not. The per-theorem matrix is
 `conformance/THEOREM_MAP.md`; the public summary is in `README.md`.
 
 ## Verified (green)
@@ -15,7 +15,7 @@ Honest, one-screen snapshot of what is verified and what is not. The per-theorem
   each mapped one-to-one to a theorem name.
 - **Halmos (symbolic).** Per-selector symbolic checks pass, including the oracle-independence canary.
 
-## Not done — stated plainly
+## Not done
 
 1. **Certora**: specs typecheck only; no cloud verdict has been obtained (needs a prover key). Marked 🟡 in
    the theorem map, not ✅.
@@ -24,7 +24,7 @@ Honest, one-screen snapshot of what is verified and what is not. The per-theorem
 3. **Call-vault residual policy**: the put vault implements the SETTLEMENT_SPEC §6 `residualRecipient`
    terminal rule. The call vault relies on its exact 1:1 `redeemPair` leaving empty pools and documents the
    stray-donation edge as a known non-goal (`conformance/foundry/test/ResidualLivenessWitness.t.sol`).
-4. **Not third-party audited.** This is a settlement-core safety argument, not an audit and not a TVL claim.
+4. **Not third-party audited.** This is a settlement-core safety argument, not an audit.
 
 ## Reproduce
 

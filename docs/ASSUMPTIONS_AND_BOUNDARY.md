@@ -31,6 +31,6 @@ oracle/DEX read — this is theorem **T_OracleIndependence**, proved *structural
 input from the transition surface, not "settlement happens to be time-invariant"; see `SAFETY_THEOREMS.md`
 §7). **Pricing** (what a claim costs to buy) uses an off-chain pricer-signed EIP-712 quote, verified on-chain
 *at trade time*, never at settlement. A mispriced quote is a loss for the market maker, not a solvency event
-for the vault. We never claim "no prices anywhere" — only that *settlement correctness* is independent of any
+for the vault. Prices exist in the product; *settlement correctness* is independent of any
 price. This is the load-bearing claim, because the price feed is the usual drain vector in DeFi
 options/lending, and here there is no price feed to manipulate.

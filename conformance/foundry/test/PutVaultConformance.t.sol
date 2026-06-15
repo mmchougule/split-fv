@@ -325,7 +325,7 @@ contract PutVaultConformanceTest is MiniTest {
     // T_ResidualLiveness (put), SETTLEMENT_SPEC §6: the shipped PutVault NOW implements
     // the residualRecipient terminal rule. When pSupplyAt==0 at settle, the entire frozen
     // residual must be claimable by the immutable residualRecipient — nothing stranded.
-    // (Previously this cell was a RED honest-fail flagging the missing §6 rule; the shipped
+    // (Previously this cell was a RED known-fail flagging the missing §6 rule; the shipped
     // code has since added it, so the property now holds and the invariant verifies it.)
     function invariant_T_ResidualLiveness() public view {
         if (!vault.settled()) return;

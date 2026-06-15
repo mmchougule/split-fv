@@ -9,8 +9,9 @@ def test_full_lifecycle_call(make_vault, accounts):
     env.mint(alice, 2 * 10**18)
     assert env.v("collat") == 2 * 10**18
     assert env.v("pSupply") == 2 * 10**18 and env.v("nSupply") == 2 * 10**18
-    # move into exercise; bob (give him N) exercises 1 WETH
-    env.vault.functions  # noqa
+    # move into exercise; instead of transferring an N leg to bob (not modeled here),
+    # alice exercises 1 WETH directly.
+    _ = bob  # bob is unused in this lifecycle path; kept for parity with the scenario doc
     # transfer 1 N from alice to bob via redeemPair path is not modeled; instead alice exercises
     env.into_exercise()
     paid = env.required_in(1 * 10**18)  # = 3000 USDC

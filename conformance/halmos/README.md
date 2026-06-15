@@ -32,7 +32,7 @@ Status (last run): **25/25 symbolic checks PASS** + static oracle proof PASS.
 2. **Static (python):** the runtime bytecode contains no proxy escape and no pinnable price target; call
    targets are structurally fixed to the four token contracts.
 
-## Honest bound disclosure (no green-washing)
+## Symbolic bounds
 
 The nonlinear-multiplication checks (CEIL/FLOOR over `q*strike`: RoundingMonotone, ExercisePays,
 ResidualBound, Backing-mint) bound the symbolic amount to `q < 2³²`. This is a **solver-tractability
@@ -40,7 +40,7 @@ limit, not a soundness assumption**: full 256-bit nonlinear bitvector reasoning 
 both yices and z3 TIMEOUT at `2⁴⁸`–`2⁹⁶` even after 120 s (verified). The CEIL/FLOOR identities are
 scale-free, so a `2³²`-wide symbolic `q` (≫ any real WETH/USDC position) is a faithful witness. The
 **unbounded** statements are discharged in the Lean track; the **aggregate** Σ-bounds in Certora. Every
-bounded check carries an inline `SYMBOLIC DOMAIN (honest bound)` comment stating exactly this. The
+bounded check carries an inline `SYMBOLIC DOMAIN (bound)` comment stating exactly this. The
 phase-safety, claim-no-double, and oracle-independence checks are FULLY unbounded.
 
 `ResidualBound` asserts the safety form `credit <= pool` plus the single-division share identity

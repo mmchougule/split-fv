@@ -18,8 +18,8 @@ import {PutVault} from "../src/PutVault.sol";
  *   3. DEMONSTRATE the §6 GAP: if any asset is forced into the vault before a
  *      pSupplyAt==0 settle (the asymmetric path the spec's residualRecipient
  *      rule is meant to cover), the shipped code strands it — redeemP reverts
- *      (div by zero) and nothing routes it out. This is the honest defect the
- *      conformance track surfaces, not hides.
+ *      (div by zero) and nothing routes it out. This is the defect the
+ *      conformance track surfaces.
  */
 contract ResidualLivenessWitness is MiniTest {
     MockERC20 weth;

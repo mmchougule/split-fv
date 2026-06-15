@@ -2,83 +2,44 @@
 Shared test harness for the Split settlement-core Vyper reference (call AND put).
 
 Each test module mirrors a theorem name from docs/SAFETY_THEOREMS.md and exercises BOTH
-vaults through the real transition surface (compiled Vyper, run on py-evm via eth-tester).
+vaults through the real transition surface (compiled Vyper, run on titanoboa's EVM).
 No mocks of the vault itself — only the trusted ERC20 (MockERC20.vy) is a test double,
 matching ASSUMPTIONS_AND_BOUNDARY (non-malicious, no hooks, no rebasing).
+
+Framework: titanoboa (`boa`) — the framework the Vyper docs recommend. Contracts are
+loaded with `boa.load(<file>.vy, *ctor_args)`; senders are simulated with
+`boa.env.prank(addr)`; time advances with `boa.env.time_travel(...)`; reverts are
+asserted with `boa.reverts()`.
 """
 import os
 import pytest
-import vyper
-from web3 import Web3
-from eth_tester import EthereumTester, PyEVMBackend
-from web3.providers.eth_tester import EthereumTesterProvider
+import boa
 
 HERE = os.path.dirname(__file__)
 VYPER_DIR = os.path.dirname(HERE)
+
+CALL_SRC = os.path.join(VYPER_DIR, "SplitVaultReference.vy")
+PUT_SRC = os.path.join(VYPER_DIR, "PutVaultReference.vy")
+MOCK_SRC = os.path.join(HERE, "MockERC20.vy")
 
 UNIT_W = 10 ** 18
 UNIT_U = 10 ** 6
 
 
-from web3.exceptions import ContractLogicError
-from eth_tester.exceptions import TransactionFailed
-
-
 def expect_revert(fn, *args, **kwargs):
-    """Assert that a transition reverts (None in the Lean model = revert here)."""
+    """Assert that a transition reverts (None in the Lean model = revert here).
+
+    Mirrors the boa `with boa.reverts(): ...` idiom but in callable form, so the
+    theorem-named test modules can stay terse.
+    """
     try:
-        fn(*args, **kwargs)
-    except (ContractLogicError, TransactionFailed):
-        return True
-    raise AssertionError("expected revert, but call succeeded")
-
-
-def _compile(path):
-    src = open(path).read()
-    return vyper.compile_code(src, output_formats=["abi", "bytecode"])
-
-
-@pytest.fixture(scope="session")
-def artifacts():
-    return {
-        "mock": _compile(os.path.join(HERE, "MockERC20.vy")),
-        "call": _compile(os.path.join(VYPER_DIR, "SplitVaultReference.vy")),
-        "put": _compile(os.path.join(VYPER_DIR, "PutVaultReference.vy")),
-    }
-
-
-@pytest.fixture
-def chain():
-    return EthereumTester(PyEVMBackend())
-
-
-@pytest.fixture
-def w3(chain):
-    return Web3(EthereumTesterProvider(chain))
-
-
-@pytest.fixture
-def accounts(w3):
-    return list(w3.eth.accounts)
-
-
-def _deploy(w3, art, *ctor):
-    C = w3.eth.contract(abi=art["abi"], bytecode=art["bytecode"])
-    tx = C.constructor(*ctor).transact({"from": w3.eth.accounts[0]})
-    rc = w3.eth.wait_for_transaction_receipt(tx)
-    return w3.eth.contract(address=rc.contractAddress, abi=art["abi"])
-
-
-def _now(w3):
-    return w3.eth.get_block("latest")["timestamp"]
-
-
-def warp_to(chain, w3, ts):
-    """Advance chain time to >= ts and mine, so the next tx sees timestamp >= ts."""
-    cur = _now(w3)
-    target = max(ts, cur + 1)
-    chain.time_travel(target)
-    chain.mine_block()
+        with boa.reverts():
+            fn(*args, **kwargs)
+    except Exception:
+        # boa.reverts() re-raises if NO revert happened; surface that as the
+        # explicit assertion error the suite expects.
+        raise AssertionError("expected revert, but call succeeded")
+    return True
 
 
 class VaultEnv:
@@ -89,26 +50,23 @@ class VaultEnv:
       strike asset  = USDC (call) / WETH (put)
     """
 
-    def __init__(self, chain, w3, artifacts, kind, strike, maturity, window, residual):
-        self.chain = chain
-        self.w3 = w3
+    def __init__(self, kind, strike, maturity, window, residual):
         self.kind = kind
-        self.acct0 = w3.eth.accounts[0]
         # decimals: weth 18, usdc 6
-        self.weth = _deploy(w3, artifacts["mock"], 18)
-        self.usdc = _deploy(w3, artifacts["mock"], 6)
+        self.weth = boa.load(MOCK_SRC, 18)
+        self.usdc = boa.load(MOCK_SRC, 6)
         if kind == "call":
             # ctor(weth, usdc, strike, maturity, window, residual)
-            self.vault = _deploy(
-                w3, artifacts["call"],
+            self.vault = boa.load(
+                CALL_SRC,
                 self.weth.address, self.usdc.address, strike, maturity, window, residual,
             )
             self.collat_tok = self.weth   # WETH
             self.strike_tok = self.usdc   # USDC
         else:
             # ctor(usdc, weth, strike, maturity, window, residual)
-            self.vault = _deploy(
-                w3, artifacts["put"],
+            self.vault = boa.load(
+                PUT_SRC,
                 self.usdc.address, self.weth.address, strike, maturity, window, residual,
             )
             self.collat_tok = self.usdc   # USDC
@@ -116,54 +74,68 @@ class VaultEnv:
 
     # --- token plumbing ------------------------------------------------------
     def fund_collat(self, who, amt):
-        self.collat_tok.functions.mint(who, amt).transact({"from": self.acct0})
-        self.collat_tok.functions.approve(self.vault.address, 2 ** 256 - 1).transact({"from": who})
+        self.collat_tok.mint(who, amt)
+        with boa.env.prank(who):
+            self.collat_tok.approve(self.vault.address, 2 ** 256 - 1)
 
     def fund_strike(self, who, amt):
-        self.strike_tok.functions.mint(who, amt).transact({"from": self.acct0})
-        self.strike_tok.functions.approve(self.vault.address, 2 ** 256 - 1).transact({"from": who})
+        self.strike_tok.mint(who, amt)
+        with boa.env.prank(who):
+            self.strike_tok.approve(self.vault.address, 2 ** 256 - 1)
 
     def collat_bal_of(self, who):
-        return self.collat_tok.functions.balanceOf(who).call()
+        return self.collat_tok.balanceOf(who)
 
     def strike_bal_of(self, who):
-        return self.strike_tok.functions.balanceOf(who).call()
+        return self.strike_tok.balanceOf(who)
 
     def vault_collat_token_bal(self):
-        return self.collat_tok.functions.balanceOf(self.vault.address).call()
+        return self.collat_tok.balanceOf(self.vault.address)
 
     def vault_strike_token_bal(self):
-        return self.strike_tok.functions.balanceOf(self.vault.address).call()
+        return self.strike_tok.balanceOf(self.vault.address)
 
     # --- transitions ---------------------------------------------------------
     def mint(self, who, q):
-        return self.vault.functions.mint(q).transact({"from": who})
+        with boa.env.prank(who):
+            return self.vault.mint(q)
 
     def redeemPair(self, who, q):
-        return self.vault.functions.redeemPair(q).transact({"from": who})
+        with boa.env.prank(who):
+            return self.vault.redeemPair(q)
 
     def exercise(self, who, q):
-        return self.vault.functions.exercise(q).transact({"from": who})
+        with boa.env.prank(who):
+            return self.vault.exercise(q)
 
     def settle(self, who=None):
-        return self.vault.functions.settle().transact({"from": who or self.acct0})
+        if who is None:
+            return self.vault.settle()
+        with boa.env.prank(who):
+            return self.vault.settle()
 
     def redeemP(self, who, q):
-        return self.vault.functions.redeemP(q).transact({"from": who})
+        with boa.env.prank(who):
+            return self.vault.redeemP(q)
 
     def claimW(self, who, to=None):
-        return self.vault.functions.claimW(to or who).transact({"from": who})
+        with boa.env.prank(who):
+            return self.vault.claimW(to or who)
 
     def claimU(self, who, to=None):
-        return self.vault.functions.claimU(to or who).transact({"from": who})
+        with boa.env.prank(who):
+            return self.vault.claimU(to or who)
 
     # --- views ---------------------------------------------------------------
     def v(self, name, *args):
-        return getattr(self.vault.functions, name)(*args).call()
+        return getattr(self.vault, name)(*args)
 
     # --- time ----------------------------------------------------------------
     def warp(self, ts):
-        warp_to(self.chain, self.w3, ts)
+        """Advance chain time to >= ts so the next tx sees timestamp >= ts."""
+        cur = boa.env.evm.patch.timestamp
+        target = max(ts, cur + 1)
+        boa.env.time_travel(seconds=target - cur)
 
     def into_exercise(self):
         self.warp(self.v("maturity"))
@@ -179,10 +151,16 @@ class VaultEnv:
 
 
 @pytest.fixture
-def make_vault(chain, w3, artifacts, accounts):
+def accounts():
+    """Ten deterministic test addresses, mirroring the old eth-tester account list."""
+    return [boa.env.generate_address(f"acct{i}") for i in range(10)]
+
+
+@pytest.fixture
+def make_vault(accounts):
     """Factory: make_vault(kind, strike=..., ...) -> VaultEnv. maturity in the future."""
     def _make(kind, strike=None, window=10_000, residual=None, maturity=None):
-        now = _now(w3)
+        now = boa.env.evm.patch.timestamp
         if maturity is None:
             maturity = now + 10_000
         if residual is None:
@@ -190,7 +168,7 @@ def make_vault(chain, w3, artifacts, accounts):
         if strike is None:
             # call: USDC per WETH (6dp) -> 3000 USDC; put: WETH per USDC (18dp basis)
             strike = 3000 * UNIT_U if kind == "call" else (UNIT_W // 3000)
-        return VaultEnv(chain, w3, artifacts, kind, strike, maturity, window, residual)
+        return VaultEnv(kind, strike, maturity, window, residual)
     return _make
 
 

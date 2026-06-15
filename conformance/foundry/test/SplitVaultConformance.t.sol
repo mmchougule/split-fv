@@ -148,7 +148,7 @@ contract CallHandler is MiniTest {
     // GENUINELY REACHABLE, not vacuously skipped. Pre-maturity, redeem every actor's
     // full P+N pair (burning all P and all N together), then warp past the window
     // and settle. This drives the contract into the exact pSupplyAt==0 settled
-    // state that invariant_T_ResidualLiveness is meant to certify. The honest
+    // state that invariant_T_ResidualLiveness is meant to certify. The
     // outcome on the real transition surface: pools are empty (symmetric path), so
     // liveness holds with no stranding. (Stray-collateral stranding — the §6 gap —
     // is shown directly in ResidualLivenessWitness.t.sol; it is NOT reachable here
@@ -378,7 +378,7 @@ contract SplitVaultConformanceTest is MiniTest {
     // T_ResidualLiveness — after settle, every asset is claimable by a valid
     // claimant or the residual recipient (SETTLEMENT_SPEC §6), or bounded dust.
     //
-    // HONEST CONFORMANCE STATEMENT: the SHIPPED SplitVault.sol does NOT implement
+    // CONFORMANCE STATEMENT: the SHIPPED SplitVault.sol does NOT implement
     // the §6 terminal rule (no residualRecipient credit when pSupplyAt==0). When
     // settle() is reached with P.totalSupply()==0, wethPool/usdcPool are frozen
     // but redeemP reverts (divide-by-pSupplyAt==0) and nothing routes them out:

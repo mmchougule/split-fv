@@ -11,7 +11,7 @@
  * PutVault.redeemP credits usdcCredit = floor(usdcPool*q/pSupplyAt) and
  * wethCredit = floor(wethPool*q/pSupplyAt). Same FLOOR pro-rata bound applies.
  *
- * HONEST GAP: identical to the call vault — PutVault.sol has NO residualRecipient
+ * Known gap: identical to the call vault — PutVault.sol has NO residualRecipient
  * and redeemP divides by pSupplyAt with no guard. `no_stranded_residualLiveness_SPEC_v6`
  * is EXPECTED TO FAIL until the §6 fix lands; `no_stranded_currentImpl_safety`
  * documents the weaker safety-only property the current code satisfies.

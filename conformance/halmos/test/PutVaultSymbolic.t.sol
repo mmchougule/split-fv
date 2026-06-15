@@ -47,7 +47,7 @@ contract PutVaultSymbolicTest is SymTest, Test {
     function check_T_Backing_mint_put(uint256 q) public {
         _deploy();
         q = svm.createUint256("q");
-        // SYMBOLIC DOMAIN (honest bound): q symbolic over [0, 2**32). The CEIL-in collateral
+        // SYMBOLIC DOMAIN (bound): q symbolic over [0, 2**32). The CEIL-in collateral
         // cover (held*1e18 >= nSupply*strike) is the same scale-free CEIL identity; 2**32 is a
         // solver-tractability bound (the re-multiplied product times out at 2**96, verified
         // z3 >90s). Unbounded backing is the Lean track's T_Backing.
@@ -70,7 +70,7 @@ contract PutVaultSymbolicTest is SymTest, Test {
         _deploy();
         qm = svm.createUint256("qm");
         qe = svm.createUint256("qe");
-        // SYMBOLIC DOMAIN (honest bound): qm, qe symbolic over [0, 2**32). FLOOR-out
+        // SYMBOLIC DOMAIN (bound): qm, qe symbolic over [0, 2**32). FLOOR-out
         // (out*1e18 <= qe*strike) is scale-free; 2**32 is a solver-tractability bound. The
         // unbounded statement is in Lean Put.Theorems (T_ExercisePays for the put).
         vm.assume(qm > 0 && qm < 2 ** 32);
@@ -103,7 +103,7 @@ contract PutVaultSymbolicTest is SymTest, Test {
     function check_T_RoundingMonotone_put(uint256 q) public {
         _deploy();
         q = svm.createUint256("q");
-        // SYMBOLIC DOMAIN (honest bound): q fully symbolic over [0, 2**32). CEIL-in/FLOOR-out
+        // SYMBOLIC DOMAIN (bound): q fully symbolic over [0, 2**32). CEIL-in/FLOOR-out
         // and req>=out are scale-free; 2**32 is a solver-tractability bound (nonlinear
         // q*strike vs req*1e18 / out*1e18 times out wider). Unbounded fact: Lean Put.Rounding.
         vm.assume(q < 2 ** 32);
@@ -119,7 +119,7 @@ contract PutVaultSymbolicTest is SymTest, Test {
         _deploy();
         qm = svm.createUint256("qm");
         qr = svm.createUint256("qr");
-        // SYMBOLIC DOMAIN (honest bound): qm, qr symbolic over [0, 2**32). FLOOR pro-rata
+        // SYMBOLIC DOMAIN (bound): qm, qr symbolic over [0, 2**32). FLOOR pro-rata
         // bound has two symbolic products + division -> 2**32 is a solver-tractability bound.
         // Unbounded Σ-credits ≤ pool: Lean Put.T_ResidualBound + Certora put residual rules.
         vm.assume(qm > 0 && qm < 2 ** 32);

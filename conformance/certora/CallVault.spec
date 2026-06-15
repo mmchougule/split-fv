@@ -10,9 +10,9 @@
  * Theorem map (see ../THEOREM_MAP.md):
  *   credits_le_holdings  -> T_Backing / T_ClaimNoDouble  (Σ claimW ≤ holdings, Σ claimU ≤ holdings)
  *   residual_le_pool     -> T_ResidualBound              (Σ credits ≤ frozen pool collatAt/strikeAt)
- *   no_stranded          -> T_ResidualLiveness           (residual reachable; see HONEST GAP below)
+ *   no_stranded          -> T_ResidualLiveness           (residual reachable; see Known gap below)
  *
- * HONEST GAP (do not hide): the SHIPPED SplitVault.sol does NOT implement the
+ * Known gap: the SHIPPED SplitVault.sol does NOT implement the
  * SETTLEMENT_SPEC §6 residual-recipient terminal rule. `redeemP` divides by
  * `pSupplyAt` with no `pSupplyAt > 0` guard, so the `pSupplyAt == 0` branch
  * (all P redeemed before maturity) reverts on every redeemP — funds frozen at
@@ -20,8 +20,7 @@
  * spec and is therefore EXPECTED TO FAIL against the current Solidity until the
  * §6 fix (residualRecipient credited at settle) is added. It is intentionally
  * NOT asserted as a passing invariant; `no_stranded_currentImpl` documents the
- * weaker property the current code actually satisfies. This is the conformance
- * track telling the truth, not faking green.
+ * weaker property the current code actually satisfies.
  *
  * Run (requires CERTORAKEY env + solc 0.8.24 on PATH):
  *   export CERTORAKEY=<key>
@@ -176,7 +175,7 @@ rule no_stranded_residualLiveness_SPEC_v6() {
         "SPEC §6: pSupplyAt==0 residual must be credited to residualRecipient";
 }
 
-/* What the CURRENT implementation actually guarantees (honest, passing):
+/* What the CURRENT implementation actually guarantees (passing):
  * when pSupplyAt == 0, redeemP reverts (division by zero), so no credits are
  * ever created from the stranded pool — the funds are frozen but cannot be
  * mis-credited or over-drawn. This is liveness-broken but SAFETY-preserving. */

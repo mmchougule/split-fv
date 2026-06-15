@@ -6,7 +6,7 @@
     simp [fnName, slotNames, setStorage, setMapping, getStorage, getMapping,
           msgSender, blockTimestamp, Contract.runState, Verity.bind, Bind.bind, guards]
 
-  STATUS (honest): these are the mechanical, single-transition results. The
+  STATUS: these are the mechanical, single-transition results. The
   inductive WF-preservation theorems (T_Backing over all reachable states,
   T_ResidualBound aggregate, T_ClaimNoDouble aggregate) are carried by the Lean
   source of truth in ../../../lean and are NOT duplicated here unless they
@@ -47,5 +47,12 @@ theorem redeemP_floor_le_ceil (q pool pSupplyAt : Uint256)
     (hNum : (q : Nat) * (pool : Nat) + ((pSupplyAt : Nat) - 1) ≤ MAX_UINT256) :
     (mulDivDown q pool pSupplyAt : Nat) ≤ (mulDivUp q pool pSupplyAt : Nat) :=
   Verity.Proofs.Stdlib.Math.mulDivDown_le_mulDivUp q pool pSupplyAt hC hNum
+
+-- Make the axiom footprint self-verifying: `lake build` prints the exact axioms
+-- each theorem depends on. These inherit whatever the reused Mathlib-backed
+-- framework lemma `mulDivDown_le_mulDivUp` carries (expect the standard
+-- `propext, Classical.choice, Quot.sound` — NOT any project-local `sorry`/axiom).
+#print axioms rounding_floor_le_ceil
+#print axioms redeemP_floor_le_ceil
 
 end Contracts.SplitVault.Proofs
